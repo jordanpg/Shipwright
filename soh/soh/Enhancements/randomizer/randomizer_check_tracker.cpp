@@ -12,6 +12,9 @@
 #include "3drando/item_location.hpp"
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "z64item.h"
+#ifdef ENABLE_REMOTE_CONTROL
+#include "soh/Enhancements/game-interactor/GameInteractor_Anchor.h"
+#endif
 
 extern "C" {
 #include "variables.h"
@@ -1287,9 +1290,15 @@ void DrawLocation(RandomizerCheckObject rcObj) {
             if (skipped) {
                 gSaveContext.checkTrackerData[rcObj.rc].skipped = false;
                 areaChecksGotten[rcObj.rcArea]--;
+#ifdef ENABLE_REMOTE_CONTROL
+                Anchor_SkipLocation(rcObj.rc, false);
+#endif
             } else {
                 gSaveContext.checkTrackerData[rcObj.rc].skipped = true;
                 areaChecksGotten[rcObj.rcArea]++;
+#ifdef ENABLE_REMOTE_CONTROL
+                Anchor_SkipLocation(rcObj.rc, true);
+#endif
             }
             UpdateOrdering(rcObj.rcArea);
             UpdateInventoryChecks();

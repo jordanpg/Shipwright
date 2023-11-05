@@ -3,6 +3,7 @@
 #include "macros.h"
 #include "soh/Enhancements/randomizer/3drando/random.hpp"
 #include "soh/Enhancements/enhancementTypes.h"
+#include "boost_custom/container_hash/hash_32.hpp"
 #include "variables.h"
 
 extern "C" {
