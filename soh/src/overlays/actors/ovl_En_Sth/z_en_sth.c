@@ -83,7 +83,21 @@ static EnSthActionFunc sRewardObtainedWaitActions[6] = {
 };
 
 static u16 sEventFlags[6] = {
-    0, EVENTCHKINF_SKULLTULA_REWARD_10_MASK, EVENTCHKINF_SKULLTULA_REWARD_20_MASK, EVENTCHKINF_SKULLTULA_REWARD_30_MASK, EVENTCHKINF_SKULLTULA_REWARD_40_MASK, EVENTCHKINF_SKULLTULA_REWARD_50_MASK,
+    0,
+    EVENTCHKINF_SKULLTULA_REWARD_10_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_20_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_30_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_40_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_50_MASK,
+};
+
+static u16 sEventFlagsShift[6] = {
+    0,
+    EVENTCHKINF_SKULLTULA_REWARD_10_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_20_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_30_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_40_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_50_SHIFT,
 };
 
 static s16 sGetItemIds[6] = {
@@ -246,7 +260,7 @@ void EnSth_GivePlayerItem(EnSth* this, PlayState* play) {
     u16 getItemId = sGetItemIds[this->actor.params];
     GetItemEntry getItemEntry = (GetItemEntry)GET_ITEM_NONE;
     
-    if (gSaveContext.n64ddFlag) {
+    if (IS_RANDO) {
         switch (getItemId) {
             case GI_RUPEE_GOLD:
                 if (!Flags_GetRandomizerInf(RAND_INF_KAK_100_GOLD_SKULLTULA_REWARD)) {
@@ -288,7 +302,7 @@ void EnSth_GivePlayerItem(EnSth* this, PlayState* play) {
         }
     }
 
-    if (!gSaveContext.n64ddFlag || getItemEntry.getItemId == GI_NONE) {
+    if (!IS_RANDO || getItemEntry.getItemId == GI_NONE) {
         func_8002F434(&this->actor, play, getItemId, 10000.0f, 50.0f);
     } else {
         GiveItemEntryFromActor(&this->actor, play, getItemEntry, 10000.0f, 50.0f);
@@ -300,7 +314,7 @@ void EnSth_GiveReward(EnSth* this, PlayState* play) {
         this->actor.parent = NULL;
         EnSth_SetupAction(this, EnSth_RewardObtainedTalk);
         gSaveContext.eventChkInf[EVENTCHKINF_SKULLTULA_REWARD_INDEX] |= this->eventFlag;
-        GameInteractor_ExecuteOnFlagSet(FLAG_EVENT_CHECK_INF, (EVENTCHKINF_SKULLTULA_REWARD_INDEX << 4) + (int)log2(this->eventFlag));
+        GameInteractor_ExecuteOnFlagSet(FLAG_EVENT_CHECK_INF, (EVENTCHKINF_SKULLTULA_REWARD_INDEX << 4) + sEventFlagsShift[this->actor.params]);
     } else {
         EnSth_GivePlayerItem(this, play);
     }
@@ -444,8 +458,7 @@ void EnSth_Draw(Actor* thisx, PlayState* play) {
     } else {
         gSPSegment(POLY_OPA_DISP++, 0x09, EnSth_AllocColorDList(play->state.gfxCtx, 90, 110, 130, 255));
     }
-    SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                          EnSth_OverrideLimbDraw, EnSth_PostLimbDraw, &this->actor);
+    SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, EnSth_OverrideLimbDraw, EnSth_PostLimbDraw, &this->actor);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

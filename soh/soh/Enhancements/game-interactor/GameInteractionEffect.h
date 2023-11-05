@@ -16,7 +16,10 @@ class GameInteractionEffectBase {
 public:
     virtual GameInteractionEffectQueryResult CanBeApplied() = 0;
     GameInteractionEffectQueryResult Apply();
-protected:
+    GameInteractionEffectQueryResult Remove();
+    int32_t parameters[3];
+
+  protected:
     virtual void _Apply() = 0;
 };
 

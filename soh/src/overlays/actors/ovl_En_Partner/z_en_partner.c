@@ -217,7 +217,7 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
     } else if (started == 0) {
         if (this->itemTimer <= 0) {
             if (AMMO(ITEM_BOW) > 0) {
-                if (arrowType >= 1 && !func_80087708(play, magicArrowCosts[arrowType], 0)) {
+                if (arrowType >= 1 && !Magic_RequestChange(play, magicArrowCosts[arrowType], MAGIC_CONSUME_NOW)) {
                     func_80078884(NA_SE_SY_ERROR);
                     this->canMove = 1;
                     return;
@@ -301,7 +301,7 @@ void UseHammer(Actor* thisx, PlayState* play, u8 started) {
             Vec3f shockwavePos = this->actor.world.pos;
 
             func_808429B4(play, 27767, 7, 20);
-            func_8002F7DC(&this->actor, NA_SE_IT_HAMMER_HIT);
+            Player_PlaySfx(&this->actor, NA_SE_IT_HAMMER_HIT);
 
             EffectSsBlast_SpawnWhiteShockwave(play, &shockwavePos, &zeroVec, &zeroVec);
 
@@ -477,7 +477,7 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
 
         if (started == 0 && this->usedSpell != 0) {
             this->itemTimer = 10;
-            gSaveContext.magicState = 5;
+            gSaveContext.magicState = MAGIC_STATE_RESET;
 
             switch (this->usedSpell) {
                 case 1:
@@ -509,7 +509,7 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
                         break;
                 }
 
-                gSaveContext.magicState = 3;
+                gSaveContext.magicState = MAGIC_STATE_METER_FLASH_1;
                 this->magicTimer--;
                 if (this->magicTimer <= 0) {
                     gSaveContext.magic--;
@@ -519,7 +519,7 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
 
                         this->itemTimer = 10;
                         this->usedSpell = 0;
-                        gSaveContext.magicState = 5;
+                        gSaveContext.magicState = MAGIC_STATE_RESET;
                     }
                 }
             }
