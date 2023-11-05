@@ -1443,11 +1443,11 @@ s32 PuppetOverrideDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, 
         if ((playerData.leftHandType == 4) && (playerData.biggoron_broken == 1)) {
             dLists += 4;
         } else if ((playerData.leftHandType == 6) && (playerData.playerStateFlags1 & 0x2000000)) {
-            dLists = &D_80125E08[playerData.playerAge];
+            dLists = &gPlayerLeftHandOpenDLs[playerData.playerAge];
             playerData.leftHandType = 0;
         } else if ((playerData.leftHandType == 0) && (playerData.speedXZ > 2.0f) &&
                    !(playerData.playerStateFlags1 & 0x8000000)) {
-            dLists = &D_80125E18[playerData.playerAge];
+            dLists = &gPlayerLeftHandClosedDLs[playerData.playerAge];
             playerData.leftHandType = 1;
         }
 
@@ -1459,7 +1459,7 @@ s32 PuppetOverrideDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, 
             dLists += playerData.shieldType * 4;
         } else if ((playerData.rightHandType == 8) && (playerData.speedXZ > 2.0f) &&
                    !(playerData.playerStateFlags1 & 0x8000000)) {
-            dLists = &D_80125E58[playerData.playerAge];
+            dLists = &sPlayerRightHandClosedDLs[playerData.playerAge];
             playerData.rightHandType = 9;
         }
 
@@ -1476,85 +1476,7 @@ s32 PuppetOverrideDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, 
         } else if (playerData.playerAge != LINK_AGE_ADULT &&
                    ((playerData.sheathType == 16) || (playerData.sheathType == 17)) &&
                    (playerData.swordEquipped != ITEM_SWORD_KOKIRI)) {
-            dLists = &D_80125D28[16];
-        }
-
-        if (dLists[sDListsLodOffset] != NULL) {
-            *dList = ResourceMgr_LoadGfxByName(dLists[sDListsLodOffset]);
-        } else {
-            *dList = NULL;
-        }
-    }
-
-    return false;
-}
-#endif
-
-#ifdef ENABLE_REMOTE_CONTROL
-s32 PuppetOverrideDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
-    LinkPuppet* this = (LinkPuppet*)thisx;
-
-    static Vec3f headPosLocal = { 2000.0f, 0.0f, -300.0f };
-
-    PlayerData playerData = Anchor_GetClientPlayerData(this->actor.params - 3);
-
-    if (limbIndex == PLAYER_LIMB_ROOT) {
-        if (playerData.playerAge != LINK_AGE_ADULT) {
-            if (!(playerData.moveFlags & 4) || (playerData.moveFlags & 1)) {
-                pos->x *= 0.64f;
-                pos->z *= 0.64f;
-            }
-
-            if (!(playerData.moveFlags & 4) || (playerData.moveFlags & 2)) {
-                pos->y *= 0.64f;
-            }
-        }
-
-        pos->y -= playerData.unk_6C4;
-    } else if (limbIndex == PLAYER_LIMB_HEAD) {
-        Matrix_MultVec3f(&headPosLocal, &this->actor.focus.pos);
-    } else if (limbIndex == PLAYER_LIMB_L_HAND) {
-        Matrix_MultVec3f(&headPosLocal, &this->leftHandPos);
-
-        Gfx** dLists = &sPlayerDListGroups[playerData.leftHandType][(void)0, playerData.playerAge];
-
-        if ((playerData.leftHandType == 4) && (playerData.biggoron_broken == 1)) {
-            dLists += 4;
-        } else if ((playerData.leftHandType == 6) && (playerData.playerStateFlags1 & 0x2000000)) {
-            dLists = &D_80125E08[playerData.playerAge];
-            playerData.leftHandType = 0;
-        } else if ((playerData.leftHandType == 0) && (playerData.speedXZ > 2.0f) &&
-                   !(playerData.playerStateFlags1 & 0x8000000)) {
-            dLists = &D_80125E18[playerData.playerAge];
-            playerData.leftHandType = 1;
-        }
-
-        *dList = ResourceMgr_LoadGfxByName(dLists[sDListsLodOffset]);
-    } else if (limbIndex == PLAYER_LIMB_R_HAND) {
-        Gfx** dLists = &sPlayerDListGroups[playerData.rightHandType][(void)0, playerData.playerAge];
-
-        if (playerData.rightHandType == 10) {
-            dLists += playerData.shieldType * 4;
-        } else if ((playerData.rightHandType == 8) && (playerData.speedXZ > 2.0f) &&
-                   !(playerData.playerStateFlags1 & 0x8000000)) {
-            dLists = &D_80125E58[playerData.playerAge];
-            playerData.rightHandType = 9;
-        }
-
-        *dList = ResourceMgr_LoadGfxByName(dLists[sDListsLodOffset]);
-    } else if (limbIndex == PLAYER_LIMB_SHEATH) {
-        Gfx** dLists = &sPlayerDListGroups[playerData.sheathType][(void)0, playerData.playerAge];
-
-        if ((playerData.sheathType == 18) || (playerData.sheathType == 19)) {
-            dLists += playerData.shieldType * 4;
-            if (playerData.playerAge != LINK_AGE_ADULT && (playerData.shieldType < PLAYER_SHIELD_HYLIAN) &&
-                (playerData.swordEquipped != ITEM_SWORD_KOKIRI)) {
-                dLists += 16;
-            }
-        } else if (playerData.playerAge != LINK_AGE_ADULT &&
-                   ((playerData.sheathType == 16) || (playerData.sheathType == 17)) &&
-                   (playerData.swordEquipped != ITEM_SWORD_KOKIRI)) {
-            dLists = &D_80125D28[16];
+            dLists = &sSheathWithSwordDLs[16];
         }
 
         if (dLists[sDListsLodOffset] != NULL) {

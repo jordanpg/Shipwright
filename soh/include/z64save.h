@@ -363,6 +363,7 @@ typedef struct {
     /*        */ u16 randomizerInf[10];
     /*        */ u8 mqDungeonCount;
     /*        */ u16 adultTradeItems;
+    /*        */ u8 triforcePiecesCollected;
     // #endregion
     // #region SOH [Network]
     // Upstream TODO: Move these to their own struct or name to more obviously specific to Network

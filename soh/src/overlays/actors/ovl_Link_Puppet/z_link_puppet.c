@@ -228,7 +228,7 @@ void Puppet_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot
     Vec3f* vec = &FEET_POS[((void)0, playerData.playerAge)];
     Actor_SetFeetPos(&this->actor, limbIndex, PLAYER_LIMB_L_FOOT, vec, PLAYER_LIMB_R_FOOT, vec);
 
-    if (limbIndex == PLAYER_LIMB_L_HAND && playerData.itemAction == PLAYER_IA_STICK) {
+    if (limbIndex == PLAYER_LIMB_L_HAND && playerData.itemAction == PLAYER_IA_DEKU_STICK) {
         OPEN_DISPS(play->state.gfxCtx);
 
         Matrix_Translate(-428.26f, 267.2f, -33.82f, MTXMODE_APPLY);

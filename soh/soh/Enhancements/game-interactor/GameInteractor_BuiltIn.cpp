@@ -14,7 +14,7 @@ bool IsType(const SrcType* src) {
 
 template <class TypeA>
 bool TakesParameter() {
-    return std::is_base_of_v<ParameterizedGameInteractionEffect, TypeA>;
+    return std::is_base_of_v<GameInteractionEffectBase, TypeA>;
 }
 
 template <class TypeA>

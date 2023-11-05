@@ -24,6 +24,9 @@ extern SaveContext gSaveContext;
 
 using json = nlohmann::json;
 
+void to_json(nlohmann::json & j, const RandomizerCheckTrackerData& rctd);
+void from_json(const nlohmann::json& j, RandomizerCheckTrackerData& rctd);
+
 void from_json(const json& j, Color_RGB8& color) {
     j.at("r").get_to(color.r);
     j.at("g").get_to(color.g);
@@ -220,15 +223,29 @@ void from_json(const json& j, Inventory& inventory) {
 
 void to_json(json& j, const SohStats& sohStats) {
     j = json{
-        {"locationsSkipped", sohStats.locationsSkipped},
         {"fileCreatedAt", sohStats.fileCreatedAt},
     };
 }
 
 void from_json(const json& j, SohStats& sohStats) {
-    j.at("locationsSkipped").get_to(sohStats.locationsSkipped);
     j.contains("fileCreatedAt") ? j.at("fileCreatedAt").get_to(sohStats.fileCreatedAt) : gSaveContext.sohStats.fileCreatedAt;
 }
+
+// void to_json(json& j, const RandomizerCheckTrackerData& checkTrackerData) {
+//     j = json{
+//         {"status", checkTrackerData.status},
+//         {"skipped", checkTrackerData.skipped},
+//         {"price", checkTrackerData.price},
+//         {"hintItem", checkTrackerData.hintItem}
+//     };
+// }
+
+// void from_json(const json& j, RandomizerCheckTrackerData& checkTrackerData) {
+//     j.at("status").get_to(checkTrackerData.status);
+//     j.at("skipped").get_to(checkTrackerData.skipped);
+//     j.at("price").get_to(checkTrackerData.price);
+//     j.at("hintItem").get_to(checkTrackerData.price);
+// }
 
 void to_json(json& j, const SaveContext& saveContext) {
     j = json{
@@ -249,6 +266,7 @@ void to_json(json& j, const SaveContext& saveContext) {
         {"inventory", saveContext.inventory},
         {"sohStats", saveContext.sohStats},
         {"adultTradeItems", saveContext.adultTradeItems},
+        {"checkTrackerData", saveContext.checkTrackerData}
     };
 }
 
@@ -270,6 +288,7 @@ void from_json(const json& j, SaveContext& saveContext) {
     j.at("inventory").get_to(saveContext.inventory);
     j.at("sohStats").get_to(saveContext.sohStats);
     j.at("adultTradeItems").get_to(saveContext.adultTradeItems);
+    j.at("checkTrackerData").get_to(saveContext.checkTrackerData);
 }
 
 std::map<uint32_t, AnchorClient> GameInteractorAnchor::AnchorClients = {};
@@ -496,7 +515,7 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         }
     }
     if (payload["type"] == "SKIP_LOCATION" && GameInteractor::IsSaveLoaded()) {
-        gSaveContext.sohStats.locationsSkipped[payload["locationIndex"].get<uint32_t>()] = payload["skipped"].get<bool>();
+        gSaveContext.checkTrackerData[payload["locationIndex"].get<uint32_t>()].skipped = payload["skipped"].get<bool>();
     }
     if (payload["type"] == "UPDATE_BEANS_BOUGHT" && GameInteractor::IsSaveLoaded()) {
         BEANS_BOUGHT = payload["amount"].get<uint8_t>();
@@ -597,13 +616,13 @@ void Anchor_ParseSaveStateFromRemote(nlohmann::json payload) {
     }
 
     for (int i = 0; i < 746; i++) {
-        if (!gSaveContext.sohStats.locationsSkipped[i]) {
-            gSaveContext.sohStats.locationsSkipped[i] = loadedData.sohStats.locationsSkipped[i];
+        if (!gSaveContext.checkTrackerData[i].skipped) {
+            gSaveContext.checkTrackerData[i].skipped = loadedData.checkTrackerData[i].skipped;
         }
     }
 
     // Restore master sword state
-    u8 hasMasterSword = CHECK_OWNED_EQUIP(EQUIP_SWORD, 1);
+    u8 hasMasterSword = CHECK_OWNED_EQUIP(EQUIP_TYPE_SWORD, 1);
     if (hasMasterSword) {
         loadedData.inventory.equipment |= 0x2;
     } else {
