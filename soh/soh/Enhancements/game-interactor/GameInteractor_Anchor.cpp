@@ -266,7 +266,8 @@ void to_json(json& j, const SaveContext& saveContext) {
         {"inventory", saveContext.inventory},
         {"sohStats", saveContext.sohStats},
         {"adultTradeItems", saveContext.adultTradeItems},
-        {"checkTrackerData", saveContext.checkTrackerData}
+        {"checkTrackerData", saveContext.checkTrackerData},
+        {"triforcePiecesCollected", saveContext.triforcePiecesCollected}
     };
 }
 
@@ -289,6 +290,7 @@ void from_json(const json& j, SaveContext& saveContext) {
     j.at("sohStats").get_to(saveContext.sohStats);
     j.at("adultTradeItems").get_to(saveContext.adultTradeItems);
     j.at("checkTrackerData").get_to(saveContext.checkTrackerData);
+    j.at("triforcePiecesCollected").get_to(saveContext.triforcePiecesCollected);
 }
 
 std::map<uint32_t, AnchorClient> GameInteractorAnchor::AnchorClients = {};
@@ -526,7 +528,7 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     if (payload["type"] == "CONSUME_ADULT_TRADE_ITEM" && GameInteractor::IsSaveLoaded()) {
         uint8_t itemId = payload["itemId"].get<uint8_t>();
         gSaveContext.adultTradeItems &= ~ADULT_TRADE_FLAG(itemId);
-	    Inventory_ReplaceItem(gPlayState, itemId, Randomizer_GetNextAdultTradeItem());
+        Inventory_ReplaceItem(gPlayState, itemId, Randomizer_GetNextAdultTradeItem());
     }
     if (payload["type"] == "UPDATE_KEY_COUNT" && GameInteractor::IsSaveLoaded()) {
         gSaveContext.inventory.dungeonKeys[payload["sceneNum"].get<int16_t>()] = payload["amount"].get<int8_t>();
@@ -583,6 +585,7 @@ void Anchor_ParseSaveStateFromRemote(nlohmann::json payload) {
     gSaveContext.swordHealth = loadedData.swordHealth;
     // TODO: Packet to live update this
     gSaveContext.adultTradeItems = loadedData.adultTradeItems;
+    gSaveContext.triforcePiecesCollected = loadedData.triforcePiecesCollected;
 
     for (int i = 0; i < 124; i++) {
         gSaveContext.sceneFlags[i] = loadedData.sceneFlags[i];
@@ -615,10 +618,8 @@ void Anchor_ParseSaveStateFromRemote(nlohmann::json payload) {
         gSaveContext.gsFlags[i] = loadedData.gsFlags[i];
     }
 
-    for (int i = 0; i < 746; i++) {
-        if (!gSaveContext.checkTrackerData[i].skipped) {
-            gSaveContext.checkTrackerData[i].skipped = loadedData.checkTrackerData[i].skipped;
-        }
+    for (int i = 0; i < RC_MAX; i++) {
+        gSaveContext.checkTrackerData[i] = loadedData.checkTrackerData[i];
     }
 
     // Restore master sword state

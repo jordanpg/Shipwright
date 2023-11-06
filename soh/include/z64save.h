@@ -358,7 +358,6 @@ typedef struct {
     /*        */ RandomizerCheck dampeCheck;
     /*        */ char inputSeed[1024];
     /*        */ u32 finalSeed;
-    /*        */ char seed[255];
     /*        */ u8 seedIcons[5];
     /*        */ u16 randomizerInf[10];
     /*        */ u8 mqDungeonCount;

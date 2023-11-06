@@ -187,11 +187,6 @@ void SaveManager::LoadRandomizerVersion2() {
         SaveManager::Instance->LoadData("", gSaveContext.seedIcons[i]);
     });
 
-    std::string seed;
-    // Eventually I'd like this to use the key "seed", and migrate the array stored above to "seedIcons"
-    SaveManager::Instance->LoadData("seedString", seed);
-    memcpy(gSaveContext.seed, seed.c_str(), seed.length() + 1);
-
     std::string inputSeed;
     SaveManager::Instance->LoadCharArray("inputSeed", gSaveContext.inputSeed, ARRAY_COUNT(gSaveContext.inputSeed));
 
@@ -299,8 +294,6 @@ void SaveManager::SaveRandomizer(SaveContext* saveContext, int sectionID, bool f
     SaveManager::Instance->SaveArray("seed", ARRAY_COUNT(saveContext->seedIcons), [&](size_t i) {
         SaveManager::Instance->SaveData("", saveContext->seedIcons[i]);
     });
-
-    SaveManager::Instance->SaveData("seedString", saveContext->seed);
 
     SaveManager::Instance->SaveData("inputSeed", saveContext->inputSeed);
 
