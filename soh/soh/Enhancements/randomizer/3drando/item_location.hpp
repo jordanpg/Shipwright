@@ -122,6 +122,14 @@ class SpoilerCollectionCheck {
         return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_COW, 0x00, 0x00);
     }
 
+    static auto PondFish() {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_POND_FISH, 0x00, 0x00);
+    }
+
+    static auto GrottoFish(int8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_GROTTO_FISH, 0x00, flag);
+    }
+
     static auto Fishing() {
         return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_MINIGAME, 0x00, 0x00);
     }
@@ -503,6 +511,11 @@ ItemLocation* Location(RandomizerCheck rc);
 extern std::vector<std::vector<uint32_t>> ShopLocationLists;
 
 extern std::vector<uint32_t> ScrubLocations;
+extern std::vector<uint32_t> pondFishLocations;
+extern std::unordered_map<uint32_t, uint8_t> pondFishLocationAgeMap;
+extern std::vector<uint32_t> pondFishChildLocations;
+extern std::vector<uint32_t> pondFishAdultLocations;
+extern std::vector<uint32_t> grottoFishLocations;
 
 extern std::vector<uint32_t> gossipStoneLocations;
 
@@ -527,6 +540,11 @@ void GenerateLocationPool();
 void PlaceItemInLocation(uint32_t loc, uint32_t item, bool applyEffectImmediately = false, bool setHidden = false);
 std::vector<uint32_t> GetLocations(const std::vector<uint32_t>& locationPool, Category categoryInclude,
                                    Category categoryExclude = Category::cNull);
+/// <summary>
+/// Get locations for fishsanity
+/// </summary>
+/// <returns>Pair of vectors where the first vector is the list of active fish locations, and the second is the list of inactive fish locations.</returns>
+std::pair<std::vector<uint32_t>, std::vector<uint32_t>> GetFishsanityLocations();
 void LocationReset();
 void ItemReset();
 void HintReset();

@@ -197,6 +197,10 @@ namespace Settings {
   Option ShuffleAdultTradeQuest     = Option::Bool("Shuffle Adult Trade",    {"Off", "On"});
   Option ShuffleChestMinigame       = Option::U8  ("Shuffle Chest Minigame", {"Off", "On (Separate)", "On (Pack)"});
   Option Shuffle100GSReward         = Option::Bool("Shuffle 100 GS Reward",  {"Off", "On"});
+  Option Fishsanity                 = Option::U8  ("Fishsanity",             {"Off", "Shuffle Fishing Pond", "Shuffle Grotto Fish", "Shuffle Both"});
+  Option FishsanityPondCount        = Option::U8  ("Pond Fish Count",        {NumOpts(0, 17, 1)}, OptionCategory::Setting, 0, true);
+  Option FishsanityAgeSplit         = Option::Bool("Split Pond Fish",        {"Off", "On"});
+  Option ShuffleFishingPole         = Option::Bool("Shuffle Fishing Pole",   {"Off", "On"});
 
   std::vector<Option *> shuffleOptions = {
     &RandomizeShuffle,
@@ -208,6 +212,10 @@ namespace Settings {
     &ShopsanityPricesAffordable,
     &Tokensanity,
     &Scrubsanity,
+    &Fishsanity,
+    &FishsanityPondCount,
+    &FishsanityAgeSplit,
+    &ShuffleFishingPole,
     &ShuffleCows,
     &ShuffleKokiriSword,
     &ShuffleMasterSword,
@@ -219,7 +227,7 @@ namespace Settings {
     &ShuffleFrogSongRupees,
     &ShuffleAdultTradeQuest,
     &ShuffleChestMinigame,
-    &Shuffle100GSReward,
+    &Shuffle100GSReward
   };
 
   //Shuffle Dungeon Items
@@ -337,6 +345,7 @@ namespace Settings {
   Option Kak40GSHintText     = Option::Bool("40 GS Hint",             {"Off", "On"}, OptionCategory::Setting, 0);
   Option Kak50GSHintText     = Option::Bool("50 GS Hint",             {"Off", "On"}, OptionCategory::Setting, 0);
   Option ScrubHintText       = Option::Bool("Scrub Hint Text",        {"Off", "On"}, OptionCategory::Setting, 0);
+  Option FishingPoleHint     = Option::Bool("Fishing Pole Hint",      {"Off", "On"}, OptionCategory::Setting, 0);
   Option CompassesShowReward = Option::U8  ("Compasses Show Rewards", {"No", "Yes"}, OptionCategory::Setting, 1);
   Option CompassesShowWotH   = Option::U8  ("Compasses Show WotH",    {"No", "Yes"}, OptionCategory::Setting, 1);
   Option MapsShowDungeonMode = Option::U8  ("Maps Show Dungeon Modes",{"No", "Yes"}, OptionCategory::Setting, 1);
@@ -1324,6 +1333,10 @@ namespace Settings {
     ctx.shuffleAdultTradeQuest = (ShuffleAdultTradeQuest) ? 1 : 0;
     ctx.shuffleChestMinigame = ShuffleChestMinigame.Value<uint8_t>();
     ctx.shuffle100GsReward   = (Shuffle100GSReward) ? 1 : 0;
+    ctx.fishsanity           = Fishsanity.Value<uint8_t>();
+    ctx.fishsanityPondCount  = FishsanityPondCount.Value<uint8_t>();
+    ctx.fishsanityAgeSplit   = (FishsanityAgeSplit) ? 1 : 0;
+    ctx.shuffleFishingPole   = (ShuffleFishingPole) ? 1 : 0;
 
     ctx.mapsAndCompasses     = MapsAndCompasses.Value<uint8_t>();
     ctx.keysanity            = Keysanity.Value<uint8_t>();
@@ -1606,6 +1619,17 @@ namespace Settings {
       Unhide(cowLocations);
     } else {
       IncludeAndHide(cowLocations);
+    }
+
+    //Force include fish locations based on fishsanity settings
+    if (Fishsanity.Is(FISHSANITY_OFF)) {
+      // Fishsanity is off; no need to do any extra work.
+      IncludeAndHide(GetLocations(everyPossibleLocation, Category::cFish));
+    } else {
+      // Force include inactive fish & unhide active fish
+      auto [activeFish, inactiveFish] = GetFishsanityLocations();
+      Unhide(activeFish);
+      IncludeAndHide(inactiveFish);
     }
 
     //Force include the Kokiri Sword Chest if Shuffle Kokiri Sword is Off
@@ -1949,6 +1973,17 @@ namespace Settings {
       if (GanonsBossKey.Is(GANONSBOSSKEY_FINAL_GS_REWARD)) {
         Shuffle100GSReward.SetSelectedIndex(ON);
       }
+
+      // Fishsanity settings should not appear if fishsanity is off
+      if (!Fishsanity.Is(FISHSANITY_OFF)) {
+        FishsanityPondCount.Unhide();
+        FishsanityAgeSplit.Unhide();
+      } else {
+        FishsanityPondCount.Hide();
+        FishsanityPondCount.SetSelectedIndex(0);
+        FishsanityAgeSplit.Hide();
+        FishsanityAgeSplit.SetSelectedIndex(0);
+      }
     }
 
     //Force Link's Pocket Item to be a dungeon reward if Shuffle Rewards is end of dungeons
@@ -2079,6 +2114,10 @@ namespace Settings {
     { &Shopsanity, SHOPSANITY_OFF },
     { &Tokensanity, TOKENSANITY_OFF },
     { &Scrubsanity, SCRUBSANITY_OFF },
+    { &Fishsanity, FISHSANITY_OFF },
+    { &FishsanityPondCount, 0 },
+    { &FishsanityAgeSplit, OFF },
+    { &ShuffleFishingPole, OFF },
     { &ShuffleCows, OFF },
     { &ShuffleKokiriSword, OFF },
     { &ShuffleMasterSword, OFF },
@@ -2119,6 +2158,7 @@ namespace Settings {
     { &Kak40GSHintText, HINTS_NO_HINTS },
     { &Kak50GSHintText, HINTS_NO_HINTS },
     { &ScrubHintText, HINTS_NO_HINTS },
+    { &FishingPoleHint, HINTS_NO_HINTS },
   };
 
   // Randomizes all settings in a category if chosen
@@ -2327,6 +2367,10 @@ namespace Settings {
     ShopsanityPrices.SetSelectedIndex(cvarSettings[RSK_SHOPSANITY_PRICES]);
     ShopsanityPricesAffordable.SetSelectedIndex(cvarSettings[RSK_SHOPSANITY_PRICES_AFFORDABLE]);
     Scrubsanity.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_SCRUBS]);
+    Fishsanity.SetSelectedIndex(cvarSettings[RSK_FISHSANITY]);
+    FishsanityPondCount.SetSelectedIndex(cvarSettings[RSK_FISHSANITY_POND_COUNT]);
+    FishsanityAgeSplit.SetSelectedIndex(cvarSettings[RSK_FISHSANITY_AGE_SPLIT]);
+    ShuffleFishingPole.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_FISHING_POLE]);
     ShuffleCows.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_COWS]);
     ShuffleKokiriSword.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_KOKIRI_SWORD]);
     ShuffleMasterSword.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_MASTER_SWORD]);
@@ -2421,6 +2465,7 @@ namespace Settings {
     Kak40GSHintText.SetSelectedIndex(cvarSettings[RSK_KAK_40_SKULLS_HINT]);
     Kak50GSHintText.SetSelectedIndex(cvarSettings[RSK_KAK_50_SKULLS_HINT]);
     ScrubHintText.SetSelectedIndex(cvarSettings[RSK_SCRUB_TEXT_HINT]);
+    FishingPoleHint.SetSelectedIndex(cvarSettings[RSK_FISHING_POLE_HINT]);
     HintDistribution.SetSelectedIndex(cvarSettings[RSK_HINT_DISTRIBUTION]);
     BlueFireArrows.SetSelectedIndex(cvarSettings[RSK_BLUE_FIRE_ARROWS]);
     SunlightArrows.SetSelectedIndex(cvarSettings[RSK_SUNLIGHT_ARROWS]);

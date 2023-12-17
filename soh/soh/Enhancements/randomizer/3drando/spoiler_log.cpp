@@ -87,6 +87,13 @@ void WriteIngameSpoilerLog() {
     uint8_t currentGroup = SpoilerCollectionCheckGroup::SPOILER_COLLECTION_GROUP_COUNT;
     bool spoilerOutOfSpace = false;
 
+    // Prepare list of inactive fish if fishsanity is on
+    std::vector<uint32_t> inactiveFish;
+    if (Settings::Fishsanity.IsNot(FISHSANITY_OFF) && Settings::Fishsanity.IsNot(FISHSANITY_GROTTOSONLY)) {
+        inactiveFish = GetFishsanityLocations().second;
+        std::sort(inactiveFish.begin(), inactiveFish.end());
+    }
+
     // Create map of string data offsets for all _unique_ item locations and names in the playthrough
     // Some item names, like gold skulltula tokens, can appear many times in a playthrough
     std::unordered_map<uint32_t, uint16_t>
@@ -133,6 +140,14 @@ void WriteIngameSpoilerLog() {
                   (loc->IsCategory(Category::cVanillaGFSmallKey) || loc->GetHintKey() == GF_GERUDO_MEMBERSHIP_CARD)) ||
                  (Settings::GerudoFortress.Is(GERUDOFORTRESS_FAST) && loc->IsCategory(Category::cVanillaGFSmallKey) &&
                   loc->GetHintKey() != GF_NORTH_F1_CARPENTER)) {
+            continue;
+        }
+        // Fish
+        else if (Settings::Fishsanity.Is(FISHSANITY_OFF) && loc->IsCategory(Category::cFish)) {
+            continue;
+        }
+        // Hide inactive pond fish
+        else if (Settings::Fishsanity.IsNot(FISHSANITY_OFF) && Settings::Fishsanity.IsNot(FISHSANITY_GROTTOSONLY) && std::binary_search(inactiveFish.begin(), inactiveFish.end(), key)) {
             continue;
         }
 
@@ -672,6 +687,7 @@ static void WriteHints(int language) {
     std::string unformattedGregText;
     std::string unformattedSheikText;
     std::string unformattedSariaText;
+    std::string unformattedFishingPoleText;
 
     switch (language) {
         case 0:
@@ -682,6 +698,7 @@ static void WriteHints(int language) {
             unformattedGregText = GetGregHintText().GetEnglish();
             unformattedSheikText = GetSheikHintText().GetEnglish();
             unformattedSariaText = GetSariaHintText().GetEnglish();
+            unformattedFishingPoleText = GetFishingPoleText().GetEnglish();
             jsonData["warpMinuetText"] = GetWarpMinuetText().GetEnglish();
             jsonData["warpBoleroText"] = GetWarpBoleroText().GetEnglish();
             jsonData["warpSerenadeText"] = GetWarpSerenadeText().GetEnglish();
@@ -698,6 +715,7 @@ static void WriteHints(int language) {
             unformattedGregText = GetGregHintText().GetFrench();
             unformattedSheikText = GetSheikHintText().GetFrench();
             unformattedSariaText = GetSariaHintText().GetFrench();
+            unformattedFishingPoleText = GetFishingPoleText().GetFrench();
             jsonData["warpMinuetText"] = GetWarpMinuetText().GetFrench();
             jsonData["warpBoleroText"] = GetWarpBoleroText().GetFrench();
             jsonData["warpSerenadeText"] = GetWarpSerenadeText().GetFrench();
@@ -740,6 +758,7 @@ static void WriteHints(int language) {
     std::string gregText = AutoFormatHintTextString(unformattedGregText);
     std::string sheikText = AutoFormatHintTextString(unformattedSheikText);
     std::string sariaText = AutoFormatHintTextString(unformattedSariaText);
+    std::string fishingPoleText = AutoFormatHintTextString(unformattedFishingPoleText);
 
     jsonData["ganonText"] = ganonText;
     jsonData["ganonHintText"] = ganonHintText;
@@ -752,6 +771,8 @@ static void WriteHints(int language) {
     jsonData["sheikText"] = sheikText;
     jsonData["sariaText"] = sariaText;
     jsonData["sariaHintLoc"] = GetSariaHintLoc();
+    jsonData["fishingPoleText"] = fishingPoleText;
+    jsonData["fishingPoleLoc"] = GetFishingPoleLoc();
 
     if (Settings::GossipStoneHints.Is(HINTS_NO_HINTS)) {
         return;

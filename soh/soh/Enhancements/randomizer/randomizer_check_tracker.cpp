@@ -56,6 +56,8 @@ bool showBeans;
 bool showScrubs;
 bool showMerchants;
 bool showCows;
+bool showFish;
+bool showGrottoFish;
 bool showAdultTrade;
 bool showKokiriSword;
 bool showMasterSword;
@@ -72,6 +74,9 @@ bool show100SkullReward;
 bool showLinksPocket;
 bool fortressFast;
 bool fortressNormal;
+
+u8 fishsanityPondCount;
+bool fishsanityPondSplit;
 
 // persistent during gameplay
 bool initialized;
@@ -113,6 +118,7 @@ RandomizerCheck lastLocationChecked = RC_UNKNOWN_CHECK;
 RandomizerCheckArea previousArea = RCAREA_INVALID;
 RandomizerCheckArea currentArea = RCAREA_INVALID;
 OSContPad* trackerButtonsPressed;
+std::unordered_map<RandomizerCheck, std::string> checkNameOverrides;
 
 void BeginFloatWindows(std::string UniqueName, bool& open, ImGuiWindowFlags flags = 0);
 bool CompareChecks(RandomizerCheckObject, RandomizerCheckObject);
@@ -390,6 +396,8 @@ bool HasItemBeenCollected(RandomizerCheck rc) {
     case SpoilerCollectionCheckType::SPOILER_CHK_MERCHANT:
     case SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM:
     case SpoilerCollectionCheckType::SPOILER_CHK_COW:
+    case SpoilerCollectionCheckType::SPOILER_CHK_POND_FISH:
+    case SpoilerCollectionCheckType::SPOILER_CHK_GROTTO_FISH:
     case SpoilerCollectionCheckType::SPOILER_CHK_SCRUB:
     case SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF:
     case SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD:
@@ -443,6 +451,14 @@ void CheckTrackerLoadGame(int32_t fileNum) {
 
         if (areaChecksGotten[realRcObj.rcArea] != 0 || RandomizerCheckObjects::AreaIsOverworld(realRcObj.rcArea)) {
             areasSpoiled |= (1 << realRcObj.rcArea);
+        }
+
+        // Create check name overrides for child pond fish if age split is disabled
+        if (showFish && rcObj.rcType == RCTYPE_FISH && rcObj.sceneId == SCENE_FISHING_POND && rcObj.actorParams != 116 &&
+            !OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY_AGE_SPLIT)) {
+            if (rcObj.rcShortName.starts_with("Child")) {
+                checkNameOverrides[rc] = rcObj.rcShortName.substr(6);
+            }
         }
     }
     if (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_LINKS_POCKET) != RO_LINKS_POCKET_NOTHING && IS_RANDO) {
@@ -706,6 +722,8 @@ void CheckTrackerFlagSet(int16_t flagType, int32_t flag) {
               (scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_MERCHANT ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_COW ||
+               scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_POND_FISH ||
+               scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_GROTTO_FISH ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_SCRUB ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF)) {
@@ -1042,6 +1060,20 @@ void LoadSettings() {
     showCows = IS_RANDO ?
         OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_COWS) == RO_GENERIC_YES
         : false;
+    showFish = IS_RANDO ?
+        (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY) != RO_FISHSANITY_OFF &&
+        OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY) != RO_FISHSANITY_GROTTOS)
+        : false;
+    showGrottoFish = IS_RANDO ?
+        (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY) != RO_FISHSANITY_OFF &&
+        OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY) != RO_FISHSANITY_POND)
+        : false;
+    fishsanityPondCount = (IS_RANDO && showFish) ?
+        OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY_POND_COUNT)
+        : 0;
+    fishsanityPondSplit = (IS_RANDO && showFish) ?
+        OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY_AGE_SPLIT) != RO_FISHSANITY_OFF
+        : false;
     showAdultTrade = IS_RANDO ?
         OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_ADULT_TRADE) == RO_GENERIC_YES
         : true;
@@ -1153,6 +1185,12 @@ bool IsVisibleInCheckTracker(RandomizerCheckObject rcObj) {
                 (showDungeonTokens && RandomizerCheckObjects::AreaIsDungeon(rcObj.rcArea))
                 ) &&
             (rcObj.rcType != RCTYPE_COW || showCows) &&
+            (rcObj.rcType != RCTYPE_FISH || (showFish && fishsanityPondCount > 0 && rcObj.sceneId == SCENE_FISHING_POND && rcObj.actorId == ACTOR_FISHING && (
+                // HACK: We're just going to assume that adult checks will always follow child checks
+                (rcObj.rc >= RC_LH_CHILD_FISH_1 && rcObj.rc < RC_LH_ADULT_FISH_1 && fishsanityPondCount > (rcObj.actorParams - 100)) ||
+                (rcObj.rc >= RC_LH_ADULT_FISH_1 && rcObj.rc <= RC_LH_ADULT_LOACH && fishsanityPondSplit && fishsanityPondCount > (rcObj.actorParams - 100))
+                )) || (showGrottoFish && rcObj.actorId == ACTOR_EN_FISH && rcObj.sceneId == SCENE_GROTTOS && rcObj.actorParams == 1)
+                ) &&
             (rcObj.rcType != RCTYPE_ADULT_TRADE ||
                 showAdultTrade ||
                 rcObj.rc == RC_KAK_ANJU_AS_ADULT ||  // adult trade checks that are always shuffled
@@ -1305,7 +1343,11 @@ void DrawLocation(RandomizerCheckObject rcObj) {
     }
  
     //Main Text
-    txt = rcObj.rcShortName;
+    if (checkNameOverrides.contains(rcObj.rc))
+        txt = checkNameOverrides[rcObj.rc];
+    else
+        txt = rcObj.rcShortName;
+
     if (lastLocationChecked == rcObj.rc)
         txt = "* " + txt;
  

@@ -570,6 +570,12 @@ static void PlaceVanillaCowMilk() {
   }
 }
 
+static void PlaceVanillaGrottoFish() {
+  for (uint32_t loc : grottoFishLocations) {
+    PlaceItemInLocation(loc, FISH, false, true);
+  }
+}
+
 static void SetScarceItemPool() {
   ReplaceMaxItem(PROGRESSIVE_BOMBCHUS, 3);
   ReplaceMaxItem(BOMBCHU_5, 1);
@@ -719,6 +725,42 @@ void GenerateItemPool() {
     }
   } else {
     PlaceVanillaCowMilk();
+  }
+
+  uint8_t fsMode = Fishsanity.Value<uint8_t>();
+  if (fsMode != FISHSANITY_OFF) {
+    if (fsMode == FISHSANITY_PONDONLY || fsMode == FISHSANITY_BOTH) {
+      // 17 max child pond fish
+      uint8_t pondCt = FishsanityPondCount.Value<uint8_t>();
+      for (uint8_t i = 0; i < pondCt; i++) {
+        AddItemToMainPool(GetJunkItem());
+      }
+
+      if (FishsanityAgeSplit) {
+        // 16 max adult pond fish, have to reduce to 16 if every fish is enabled
+        if (pondCt > 16)
+            pondCt = 16;
+        for (uint8_t i = 0; i < pondCt; i++) {
+            AddItemToMainPool(GetJunkItem());
+        }
+      }
+    }
+
+    // 9 grotto fish
+    if (fsMode == FISHSANITY_GROTTOSONLY || fsMode == FISHSANITY_BOTH) {
+      for (uint8_t i = 0; i < 9; i++)
+        AddItemToMainPool(GetJunkItem());
+    } else {
+      PlaceVanillaGrottoFish();
+    }
+  } else {
+    PlaceVanillaGrottoFish();
+  }
+
+  // Add pole to main pool
+  if (ShuffleFishingPole) {
+    AddItemToMainPool(FISHING_POLE);
+    IceTrapModels.push_back(0xE1);
   }
 
   if (ShuffleMagicBeans) {
@@ -915,6 +957,10 @@ void GenerateItemPool() {
   if (ItemPoolValue.Is(ITEMPOOL_PLENTIFUL)) {
     if (ShuffleGerudoToken) {
       AddItemToPool(PendingJunkPool, GERUDO_MEMBERSHIP_CARD);
+    }
+
+    if (ShuffleFishingPole) {
+      AddItemToPool(PendingJunkPool, FISHING_POLE);
     }
 
     //Plentiful small keys

@@ -306,6 +306,7 @@ typedef struct {
     /*        */ char dampeText[150];
     /*        */ char sheikText[200];
     /*        */ char sariaText[150];
+    /*        */ char fishingPoleText[200];
     /*        */ char warpMinuetText[100];
     /*        */ char warpBoleroText[100];
     /*        */ char warpSerenadeText[100];
@@ -317,10 +318,11 @@ typedef struct {
     /*        */ RandomizerCheck sariaCheck;
     /*        */ RandomizerCheck gregCheck;
     /*        */ RandomizerCheck dampeCheck;
+    /*        */ RandomizerCheck fishingPoleCheck;
     /*        */ char inputSeed[1024];
     /*        */ u32 finalSeed;
     /*        */ u8 seedIcons[5];
-    /*        */ u16 randomizerInf[10];
+    /*        */ u16 randomizerInf[12];
     /*        */ u8 mqDungeonCount;
     /*        */ u16 adultTradeItems;
     /*        */ u8 triforcePiecesCollected;
@@ -362,6 +364,18 @@ typedef enum {
     /* 0x05 */ HS_UNK_05,
     /* 0x06 */ HS_DAMPE_RACE
 } HighScores;
+
+// the score value for the fishing minigame also stores many flags.
+#define HS_FISH_LENGTH_CHILD 0x7F       // mask for record length of catch as child.
+#define HS_FISH_LENGTH_ADULT 0x7F000000 // mask for record length of catch as adult.
+#define HS_FISH_PLAYED_CHILD 0x100      // set when first talking to owner as child
+#define HS_FISH_PLAYED_ADULT 0x200      // set when first talking to owner as adult
+#define HS_FISH_PRIZE_CHILD 0x400       // won the Piece of Heart
+#define HS_FISH_PRIZE_ADULT 0x800       // won the Golden Scale
+#define HS_FISH_STOLE_HAT 0x1000        // Pond owner is visibly bald as Adult Link.
+#define HS_FISH_CHEAT_CHILD 0x80        // used Sinking Lure as child to catch record fish
+#define HS_FISH_CHEAT_ADULT 0x80000000  // used Sinking Lure as adult to catch record fish
+#define HS_FISH_PLAYED 0x10000          // incremented for every play. controls weather.
 
 typedef enum {
     /* 0 */ SUNSSONG_INACTIVE,

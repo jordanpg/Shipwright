@@ -201,6 +201,7 @@ extern bool MagicRefill;
 extern uint8_t PieceOfHeart;
 extern uint8_t HeartContainer;
 extern bool DoubleDefense;
+extern bool FishingPole;
 
 /* --- HELPERS --- */
 /* These are used to simplify reading the logic, but need to be updated
@@ -266,6 +267,9 @@ extern bool CanOpenBombGrotto;
 extern bool CanOpenStormGrotto;
 extern bool HookshotOrBoomerang;
 extern bool CanGetNightTimeGS;
+extern bool CanAccessChildFish;
+extern bool CanAccessAdultFish;
+extern bool CanFish;
 extern bool BigPoeKill;
 
 extern uint8_t BaseHearts;

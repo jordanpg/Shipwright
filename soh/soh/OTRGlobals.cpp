@@ -1872,7 +1872,7 @@ extern "C" SoundFont* ResourceMgr_LoadAudioSoundFont(const char* path) {
 
 extern "C" int ResourceMgr_OTRSigCheck(char* imgData)
 {
-	uintptr_t i = (uintptr_t)(imgData);
+    uintptr_t i = (uintptr_t)(imgData);
 
 // if (i == 0xD9000000 || i == 0xE7000000 || (i & 1) == 1)
     if ((i & 1) == 1)
@@ -2261,7 +2261,7 @@ extern "C" int GetEquipNowMessage(char* buffer, char* src, const int maxBufferSi
                                 "&"
                                 "Nein!"
                                 "%w\x02",
-				"\x04\x1A\x08"
+                "\x04\x1A\x08"
                                 "D\x96sirez-vous l'\x96quiper maintenant?"
                                 "\x09&&"
                                 "\x1B%g"
@@ -2354,6 +2354,18 @@ extern "C" CowIdentity Randomizer_IdentifyCow(s32 sceneNum, s32 posX, s32 posZ) 
     return OTRGlobals::Instance->gRandomizer->IdentifyCow(sceneNum, posX, posZ);
 }
 
+extern "C" s16 Randomizer_GetNextPondFish(s16 params) {
+    return OTRGlobals::Instance->gRandomizer->GetNextPondFish(params);
+}
+
+extern "C" bool Randomizer_GetPondCleared() {
+    return OTRGlobals::Instance->gRandomizer->GetPondCleared();
+}
+
+extern "C" FishIdentity Randomizer_IdentifyFish(s32 sceneNum, s32 actorParams) {
+    return OTRGlobals::Instance->gRandomizer->IdentifyFish(sceneNum, actorParams);
+}
+
 extern "C" GetItemEntry ItemTable_Retrieve(int16_t getItemID) {
     GetItemEntry giEntry = ItemTableManager::Instance->RetrieveItemEntry(MOD_NONE, getItemID);
     return giEntry;
@@ -2381,6 +2393,10 @@ extern "C" GetItemEntry Randomizer_GetItemFromKnownCheckWithoutObtainabilityChec
 
 extern "C" ItemObtainability Randomizer_GetItemObtainabilityFromRandomizerCheck(RandomizerCheck randomizerCheck) {
     return OTRGlobals::Instance->gRandomizer->GetItemObtainabilityFromRandomizerCheck(randomizerCheck);
+}
+
+extern "C" RandomizerInf Randomizer_GetRandomizerInfFromCheck(RandomizerCheck randomizerCheck) {
+    return OTRGlobals::Instance->gRandomizer->GetRandomizerInfFromCheck(randomizerCheck);
 }
 
 CustomMessage Randomizer_GetCustomGetItemMessage(Player* player) {
@@ -2551,6 +2567,9 @@ extern "C" int CustomMessage_RetrieveIfExists(PlayState* play) {
             messageEntry = OTRGlobals::Instance->gRandomizer->GetGoronMessage(choice);
         } else if (Randomizer_GetSettingValue(RSK_FROGS_HINT) && textId == TEXT_FROGS_UNDERWATER) {
             messageEntry = OTRGlobals::Instance->gRandomizer->GetFrogsMessage(textId);
+        } else if (Randomizer_GetSettingValue(RSK_SHUFFLE_FISHING_POLE) && !Flags_GetRandomizerInf(RAND_INF_FISHING_POLE_FOUND) &&
+                  (textId == TEXT_FISHING_POND_START || textId == TEXT_FISHING_POND_START_MET)) {
+            messageEntry = OTRGlobals::Instance->gRandomizer->GetFishingPondOwnerMessage(textId);
         } else if (Randomizer_GetSettingValue(RSK_SARIA_HINT)) {
             if ((gPlayState->sceneNum == SCENE_SACRED_FOREST_MEADOW && textId == TEXT_SARIA_SFM) || (textId >= TEXT_SARIAS_SONG_TEXT_START && textId <= TEXT_SARIAS_SONG_TEXT_END)) {
                 messageEntry = OTRGlobals::Instance->gRandomizer->GetSariaMessage(textId);
