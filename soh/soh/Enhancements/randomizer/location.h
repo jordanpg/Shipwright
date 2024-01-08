@@ -51,16 +51,8 @@ class SpoilerCollectionCheck {
         return SpoilerCollectionCheck(SPOILER_CHK_CHEST, scene, flag);
     }
 
-    static auto Cow(const uint8_t scene, const uint8_t flag) {
-        return SpoilerCollectionCheck(SPOILER_CHK_COW, scene, flag);
-    }
-
     static auto Fishing(const uint8_t bit) {
         return SpoilerCollectionCheck(SPOILER_CHK_MINIGAME, 0x00, bit);
-    }
-
-    static auto Scrub(const uint8_t scene, const uint8_t bit) {
-        return SpoilerCollectionCheck(SPOILER_CHK_SCRUB, scene, bit);
     }
 
     static auto GerudoToken() {
@@ -91,8 +83,8 @@ class SpoilerCollectionCheck {
         return SpoilerCollectionCheck(SPOILER_CHK_MERCHANT, scene, flag);
     }
 
-    static auto RandomizerInf(const int8_t scene, const uint8_t flag) {
-        return SpoilerCollectionCheck(SPOILER_CHK_RANDOMIZER_INF, scene, flag);
+    static auto RandomizerInf(const uint8_t flag) {
+        return SpoilerCollectionCheck(SPOILER_CHK_RANDOMIZER_INF, 0x00, flag);
     }
 };
 

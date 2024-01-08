@@ -414,8 +414,6 @@ bool HasItemBeenCollected(RandomizerCheck rc) {
                gSaveContext.sceneFlags[scene].collect & (1 << flag);
     case SpoilerCollectionCheckType::SPOILER_CHK_MERCHANT:
     case SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM:
-    case SpoilerCollectionCheckType::SPOILER_CHK_COW:
-    case SpoilerCollectionCheckType::SPOILER_CHK_SCRUB:
     case SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF:
     case SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD:
         return Flags_GetRandomizerInf(OTRGlobals::Instance->gRandomizer->GetRandomizerInfFromCheck(rc));
@@ -735,8 +733,6 @@ void CheckTrackerFlagSet(int16_t flagType, int32_t flag) {
         if (checkMatchType == SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF &&
               (scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_MERCHANT ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM ||
-               scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_COW ||
-               scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_SCRUB ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF)) {
             if (flag == OTRGlobals::Instance->gRandomizer->GetRandomizerInfFromCheck(loc.GetRandomizerCheck())) {
@@ -1317,6 +1313,11 @@ void DrawLocation(RandomizerCheck rc) {
     Rando::ItemLocation* itemLoc = OTRGlobals::Instance->gRandoContext->GetItemLocation(rc);
     RandomizerCheckTrackerData checkData = gSaveContext.checkTrackerData[rc];
     RandomizerCheckStatus status = checkData.status;
+
+    if (itemLoc->HasObtained()) {
+        status = RCSHOW_COLLECTED;
+    }
+
     bool skipped = checkData.skipped;
     if (status == RCSHOW_COLLECTED) {
         if (!showHidden && CVarGetInteger("gCheckTrackerCollectedHide", 0)) {
@@ -1646,12 +1647,12 @@ void CheckTrackerWindow::InitElement() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnExitGame>([](uint32_t fileNum) {
         Teardown();
     });
-    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnItemReceive>(CheckTrackerItemReceive);
+    // GameInteractor::Instance->RegisterGameHook<GameInteractor::OnItemReceive>(CheckTrackerItemReceive);
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>(CheckTrackerFrame);
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnTransitionEnd>(CheckTrackerTransition);
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnShopSlotChange>(CheckTrackerShopSlotChange);
-    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneFlagSet>(CheckTrackerSceneFlagSet);
-    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnFlagSet>(CheckTrackerFlagSet);
+    // GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneFlagSet>(CheckTrackerSceneFlagSet);
+    // GameInteractor::Instance->RegisterGameHook<GameInteractor::OnFlagSet>(CheckTrackerFlagSet);
 
     hideShopRightChecks = CVarGetInteger("gCheckTrackerOptionHideRightShopChecks", 1);
     alwaysShowGS = CVarGetInteger("gCheckTrackerOptionAlwaysShowGSLocs", 0);
