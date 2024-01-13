@@ -569,8 +569,25 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
             break;
         }
         case GI_VB_GIVE_ITEM_FROM_CARPET_SALESMAN: {
-            // If the rando check has already been awarded, use vanilla behavior.
-            *should = RAND_GET_OPTION(RSK_SHUFFLE_MERCHANTS) == RO_SHUFFLE_MERCHANTS_OFF || Flags_GetRandomizerInf(RAND_INF_MERCHANTS_CARPET_SALESMAN);
+            *should = RAND_GET_OPTION(RSK_SHUFFLE_MERCHANTS) == RO_SHUFFLE_MERCHANTS_OFF ||
+                      // If the rando check has already been awarded, use vanilla behavior.
+                      Flags_GetRandomizerInf(RAND_INF_MERCHANTS_CARPET_SALESMAN);
+            break;
+        }
+        case GI_VB_GIVE_ITEM_FROM_MEDIGORON: {
+                // fallthrough
+        case GI_VB_BE_ELIGIBLE_FOR_GIANTS_KNIFE_PURCHASE:
+            if (RAND_GET_OPTION(RSK_SHUFFLE_MERCHANTS) != RO_SHUFFLE_MERCHANTS_OFF &&
+                !Flags_GetRandomizerInf(RAND_INF_MERCHANTS_MEDIGORON)) {
+                if (id == GI_VB_GIVE_ITEM_FROM_MEDIGORON) {
+                    Flags_SetInfTable(INFTABLE_B1);
+                    *should = false;
+                } else {
+                    // Resets "Talked to Medigoron" flag in infTable to restore initial conversation state
+                    Flags_UnsetInfTable(INFTABLE_B1);
+                    *should = true;
+                }
+            }
             break;
         }
         case GI_VB_TRADE_POCKET_CUCCO: {
