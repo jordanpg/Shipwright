@@ -568,6 +568,11 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
             }
             break;
         }
+        case GI_VB_GIVE_ITEM_FROM_CARPET_SALESMAN: {
+            // If the rando check has already been awarded, use vanilla behavior.
+            *should = RAND_GET_OPTION(RSK_SHUFFLE_MERCHANTS) == RO_SHUFFLE_MERCHANTS_OFF || Flags_GetRandomizerInf(RAND_INF_MERCHANTS_CARPET_SALESMAN);
+            break;
+        }
         case GI_VB_TRADE_POCKET_CUCCO: {
             Randomizer_ConsumeAdultTradeItem(gPlayState, ITEM_POCKET_CUCCO);
             // Trigger the reward now
