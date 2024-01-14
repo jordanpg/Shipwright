@@ -21,6 +21,7 @@ extern "C" {
 #include "src/overlays/actors/ovl_En_Niw_Lady/z_en_niw_lady.h"
 #include "src/overlays/actors/ovl_En_Kz/z_en_kz.h"
 #include "src/overlays/actors/ovl_En_Go2/z_en_go2.h"
+#include "src/overlays/actors/ovl_En_Ms/z_en_ms.h"
 #include "adult_trade_shuffle.h"
 extern SaveContext gSaveContext;
 extern PlayState* gPlayState;
@@ -349,6 +350,12 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
             *should = true;
             break;
         }
+        case GI_VB_BE_ELIGIBLE_FOR_MAGIC_BEANS_PURCHASE: {
+            if (RAND_GET_OPTION(RSK_SHUFFLE_MAGIC_BEANS)) {
+                *should = gSaveContext.rupees >= 60;
+            }
+            break;
+        }
         case GI_VB_GIVE_ITEM_MASTER_SWORD:
             if (RAND_GET_OPTION(RSK_SHUFFLE_MASTER_SWORD)) {
                 *should = false;
@@ -575,7 +582,7 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
             break;
         }
         case GI_VB_GIVE_ITEM_FROM_MEDIGORON: {
-                // fallthrough
+            // fallthrough
         case GI_VB_BE_ELIGIBLE_FOR_GIANTS_KNIFE_PURCHASE:
             if (RAND_GET_OPTION(RSK_SHUFFLE_MERCHANTS) != RO_SHUFFLE_MERCHANTS_OFF &&
                 !Flags_GetRandomizerInf(RAND_INF_MERCHANTS_MEDIGORON)) {
@@ -587,6 +594,18 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
                     Flags_UnsetInfTable(INFTABLE_B1);
                     *should = true;
                 }
+            }
+            break;
+        }
+        case GI_VB_GIVE_ITEM_FROM_MAGIC_BEAN_SALESMAN: {
+            EnMs* enMs = static_cast<EnMs*>(optionalArg);
+            if (RAND_GET_OPTION(RSK_SHUFFLE_MAGIC_BEANS)) {
+                Rupees_ChangeBy(-60);
+                BEANS_BOUGHT = 10;
+                // Only set inf for buying rando check
+                Flags_SetRandomizerInf(RAND_INF_MERCHANTS_MAGIC_BEAN_SALESMAN);
+                enMs->actionFunc = (EnMsActionFunc)EnMs_Wait;
+                *should = false;
             }
             break;
         }

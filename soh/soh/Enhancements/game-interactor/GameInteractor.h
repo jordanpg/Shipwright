@@ -129,6 +129,9 @@ typedef enum {
     GI_VB_BE_ELIGIBLE_FOR_CHILD_ROLLING_GORON_REWARD,
     // Vanilla condition: !CHECK_OWNED_EQUIP_ALT(EQUIP_TYPE_SWORD, EQUIP_INV_SWORD_BIGGORON)
     GI_VB_BE_ELIGIBLE_FOR_GIANTS_KNIFE_PURCHASE,
+    // Opt: *EnMs
+    // Vanilla condition: gSaveContext.rupees >= sPrices[BEANS_BOUGHT]
+    GI_VB_BE_ELIGIBLE_FOR_MAGIC_BEANS_PURCHASE,
     // Opt: *EnItem00
     // Vanilla condition: Flags_GetCollectible(play, this->collectibleFlag)
     GI_VB_ITEM00_DESPAWN,
@@ -261,6 +264,8 @@ typedef enum {
     GI_VB_GIVE_ITEM_FROM_CARPET_SALESMAN,
     // Opt: *EnGm
     GI_VB_GIVE_ITEM_FROM_MEDIGORON,
+    // Opt: *EnMs
+    GI_VB_GIVE_ITEM_FROM_MAGIC_BEAN_SALESMAN,
 
     GI_VB_GIVE_ITEM_FAIRY_OCARINA,
     GI_VB_GIVE_ITEM_WEIRD_EGG,
