@@ -22,6 +22,7 @@ extern "C" {
 #include "src/overlays/actors/ovl_En_Kz/z_en_kz.h"
 #include "src/overlays/actors/ovl_En_Go2/z_en_go2.h"
 #include "src/overlays/actors/ovl_En_Ms/z_en_ms.h"
+#include "src/overlays/actors/ovl_En_Fr/z_en_fr.h"
 #include "adult_trade_shuffle.h"
 extern SaveContext gSaveContext;
 extern PlayState* gPlayState;
@@ -293,6 +294,27 @@ u8 EnDs_RandoCanGetGrannyItem() {
             // Found claim check when adult trade is off
             (!RAND_GET_OPTION(RSK_SHUFFLE_ADULT_TRADE) &&
              INV_CONTENT(ITEM_CLAIM_CHECK) == ITEM_CLAIM_CHECK));
+}
+
+RandomizerCheck EnFr_RandomizerCheckFromSongIndex(u16 songIndex) {
+    switch (songIndex) {
+        case FROG_ZL:
+            return RC_ZR_FROGS_ZELDAS_LULLABY;
+        case FROG_EPONA:
+            return RC_ZR_FROGS_EPONAS_SONG;
+        case FROG_SARIA:
+            return RC_ZR_FROGS_SARIAS_SONG;
+        case FROG_SUNS:
+            return RC_ZR_FROGS_SUNS_SONG;
+        case FROG_SOT:
+            return RC_ZR_FROGS_SONG_OF_TIME;
+        case FROG_STORMS:
+            return RC_ZR_FROGS_IN_THE_RAIN;
+        case FROG_CHOIR_SONG:
+            return RC_ZR_FROGS_OCARINA_GAME;
+        default:
+            return RC_UNKNOWN_CHECK;
+    }
 }
 
 void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* optionalArg) {
@@ -607,6 +629,21 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
                 enMs->actionFunc = (EnMsActionFunc)EnMs_Wait;
                 *should = false;
             }
+            break;
+        }
+        case GI_VB_GIVE_ITEM_FROM_FROGS: {
+            EnFr* enFr = static_cast<EnFr*>(optionalArg);
+
+            // Skip GiveReward+SetIdle action func if the reward is an ice trap
+            if (enFr->actionFunc == (EnFrActionFunc)EnFr_GiveReward) {
+                RandomizerCheck rc = EnFr_RandomizerCheckFromSongIndex(enFr->songIndex);
+                GetItemEntry gi = Rando::Context::GetInstance()->GetFinalGIEntry(rc, true, (GetItemID)Rando::StaticData::GetLocation(rc)->GetVanillaItem());
+                if (gi.getItemId == RG_ICE_TRAP) {
+                    enFr->actionFunc = (EnFrActionFunc)EnFr_Idle;
+                }
+            }
+
+            *should = false;
             break;
         }
         case GI_VB_TRADE_POCKET_CUCCO: {
