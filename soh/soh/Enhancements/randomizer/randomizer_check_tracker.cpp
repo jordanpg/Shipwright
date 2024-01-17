@@ -412,7 +412,6 @@ bool HasItemBeenCollected(RandomizerCheck rc) {
     case SpoilerCollectionCheckType::SPOILER_CHK_COLLECTABLE:
         return (gPlayState->sceneNum == scene && gPlayState->actorCtx.flags.collect & (1 << flag)) ||
                gSaveContext.sceneFlags[scene].collect & (1 << flag);
-    case SpoilerCollectionCheckType::SPOILER_CHK_MERCHANT:
     case SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM:
     case SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF:
     case SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD:
@@ -427,8 +426,6 @@ bool HasItemBeenCollected(RandomizerCheck rc) {
         return gSaveContext.infTable[scene] & INDEX_TO_16BIT_LITTLE_ENDIAN_BITMASK(flag);
     case SpoilerCollectionCheckType::SPOILER_CHK_ITEM_GET_INF:
         return gSaveContext.itemGetInf[flag / 16] & INDEX_TO_16BIT_LITTLE_ENDIAN_BITMASK(flag);
-    case SpoilerCollectionCheckType::SPOILER_CHK_MAGIC_BEANS:
-        return BEANS_BOUGHT >= 10;
     case SpoilerCollectionCheckType::SPOILER_CHK_NONE:
         return false;
     case SpoilerCollectionCheckType::SPOILER_CHK_GRAVEDIGGER:
@@ -731,8 +728,7 @@ void CheckTrackerFlagSet(int16_t flagType, int32_t flag) {
         Rando::SpoilerCollectionCheck scCheck = loc.GetCollectionCheck();
         SpoilerCollectionCheckType scCheckType = scCheck.type;
         if (checkMatchType == SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF &&
-              (scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_MERCHANT ||
-               scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM ||
+              (scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF)) {
             if (flag == OTRGlobals::Instance->gRandomizer->GetRandomizerInfFromCheck(loc.GetRandomizerCheck())) {

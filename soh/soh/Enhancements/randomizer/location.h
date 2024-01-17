@@ -71,16 +71,8 @@ class SpoilerCollectionCheck {
         return SpoilerCollectionCheck(SPOILER_CHK_SHOP_ITEM, scene, itemSlot);
     }
 
-    static auto MagicBeans(const uint8_t scene, const uint8_t flag) {
-        return SpoilerCollectionCheck(SPOILER_CHK_MAGIC_BEANS, scene, flag);
-    }
-
     static auto MasterSword() {
         return SpoilerCollectionCheck(SPOILER_CHK_MASTER_SWORD, 0x00, 0x00);
-    }
-
-    static auto Merchant(const int8_t scene, const uint8_t flag) {
-        return SpoilerCollectionCheck(SPOILER_CHK_MERCHANT, scene, flag);
     }
 
     static auto RandomizerInf(const uint8_t flag) {
