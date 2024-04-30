@@ -1690,6 +1690,55 @@ void RegisterFishsanity() {
             return;
         fishGroupCounter = 0;
     });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnVanillaBehavior>([](GIVanillaBehavior id, bool* should, void* optionalArg) {
+        if (!IS_RANDO)
+            return;
+
+        auto fs = OTRGlobals::Instance->gRandoContext->GetFishsanity();
+        bool pondShuffled = fs->GetPondFishShuffled();
+        bool overworldShuffled = fs->GetOverworldFishShuffled();
+
+        if (!pondShuffled && !overworldShuffled)
+            return;
+
+        switch (id) {
+            case GI_VB_FISHING_CONSIDER_HAND_EMPTY: {            
+                if (!pondShuffled) {
+                    break;
+                }
+                // If our hand is empty, then set our currently-held fish.
+                Fishing* fishing = static_cast<Fishing*>(optionalArg);
+                if (*should) {
+                    fs->SetHeldFish(fishing->fishsanityParams);
+                }
+                break;
+            }
+            case GI_VB_FISHING_SHOULD_CONFIRM_KEEP: {
+                if (!pondShuffled) {
+                    break;
+                }
+                // If we are confirming whether to keep this fish, then we don't want to perform a swap yet.
+                // Otherwise, swap the held fish.
+                Fishing* fishing = static_cast<Fishing*>(optionalArg);
+                if (!*should) {
+                    fishing->fishsanityParams = fs->SetHeldFish(fishing->fishsanityParams);
+                }
+                break;
+            }
+            case GI_VB_FISHING_SHOULD_SWAP_FISH: {
+                if (!pondShuffled) {
+                    break;
+                }
+                // If we are swapping the held fish, then also swap the params accordingly.
+                Fishing* fishing = static_cast<Fishing*>(optionalArg);
+                if (*should) {
+                    fishing->fishsanityParams = fs->SetHeldFish(fishing->fishsanityParams);
+                }
+                break;
+            }
+        }
+    });
 }
 
 extern "C" u8 Randomizer_GetSettingValue(RandomizerSettingKey randoSettingKey);

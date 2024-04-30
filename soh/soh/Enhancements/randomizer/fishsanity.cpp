@@ -328,6 +328,13 @@ namespace Rando {
     FishIdentity Fishsanity::GetPendingFish() {
         return mPendingFish;
     }
+
+    s16 Fishsanity::SetHeldFish(s16 params) {
+        s16 curr = this->mFishOnHandParams;
+        this->mFishOnHandParams = params;
+
+        return curr;
+    }
 } // namespace Rando
 
 // C interface

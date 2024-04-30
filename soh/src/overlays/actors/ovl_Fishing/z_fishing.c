@@ -11,12 +11,12 @@
 #include "vt.h"
 
 #include "soh/frame_interpolation.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS ACTOR_FLAG_UPDATE_WHILE_CULLED
 
 #define WATER_SURFACE_Y(play) play->colCtx.colHeader->waterBoxes->ySurface
 #define IS_FISHSANITY (IS_RANDO && Randomizer_GetPondFishShuffled())
-#define FISHID(params) (Randomizer_IdentifyFish(play->sceneNum, params))
 
 void Fishing_Init(Actor* thisx, PlayState* play);
 void Fishing_Destroy(Actor* thisx, PlayState* play);
@@ -433,7 +433,6 @@ static f32 sFishGroupAngle2;
 static f32 sFishGroupAngle3;
 static FishingEffect sFishingEffects[FISHING_EFFECT_COUNT];
 static Vec3f sStreamSoundProjectedPos;
-static s16 sFishOnHandParams;
 static Color_RGBA16 fsPulseColor = { 30, 240, 200 };
 
 void Fishing_SetColliderElement(s32 index, ColliderJntSph* collider, Vec3f* pos, f32 scale) {
@@ -3991,16 +3990,16 @@ void Fishing_UpdateFish(Actor* thisx, PlayState* play2) {
                             if (Message_ShouldAdvance(play)) {
                                 Message_CloseTextbox(play);
                                 if (play->msgCtx.choiceIndex == 0) {
-                                    if (sFishOnHandLength == 0.0f) {
+                                    if (GameInteractor_Should(GI_VB_FISHING_CONSIDER_HAND_EMPTY, sFishOnHandLength == 0.0f, this)) {
                                         sFishOnHandLength = this->fishLength;
                                         sFishOnHandIsLoach = this->isLoach;
                                         sLureCaughtWith = sLureEquipped;
-                                        if (IS_FISHSANITY) {
-                                            sFishOnHandParams = this->fishsanityParams;
-                                        }
                                         Actor_Kill(&this->actor);
-                                    } else if (getShouldConfirmKeep() && (this->isLoach == 0) && (sFishOnHandIsLoach == 0) &&
-                                               ((s16)this->fishLength < (s16)sFishOnHandLength)) {
+                                    } else if (GameInteractor_Should(GI_VB_FISHING_SHOULD_CONFIRM_KEEP,
+                                        ((this->isLoach == 0) &&
+                                        (sFishOnHandIsLoach == 0) &&
+                                        ((s16)this->fishLength < (s16)sFishOnHandLength)),
+                                    this)) {
                                         this->keepState = 1;
                                         this->timerArray[0] = 0x3C;
                                         Message_StartTextbox(play, 0x4098, NULL);
@@ -4012,11 +4011,6 @@ void Fishing_UpdateFish(Actor* thisx, PlayState* play2) {
                                         sLureCaughtWith = sLureEquipped;
                                         this->fishLength = lengthTemp;
                                         this->isLoach = loachTemp;
-                                        if (IS_FISHSANITY) {
-                                            s16 paramsTemp = sFishOnHandParams;
-                                            sFishOnHandParams = this->fishsanityParams;
-                                            this->fishsanityParams = paramsTemp;
-                                        }
                                     }
                                 }
                                 if (this->keepState == 0) {
@@ -4030,18 +4024,13 @@ void Fishing_UpdateFish(Actor* thisx, PlayState* play2) {
                             (Message_GetState(&play->msgCtx) == TEXT_STATE_NONE)) {
                             if (Message_ShouldAdvance(play)) {
                                 Message_CloseTextbox(play);
-                                if (play->msgCtx.choiceIndex != 0) {
+                                if (GameInteractor_Should(GI_VB_FISHING_SHOULD_SWAP_FISH, play->msgCtx.choiceIndex != 0, this)) {
                                     f32 temp1 = sFishOnHandLength;
                                     s16 temp2 = sFishOnHandIsLoach;
                                     sFishOnHandLength = this->fishLength;
                                     sLureCaughtWith = sLureEquipped;
                                     this->fishLength = temp1;
                                     this->isLoach = temp2;
-                                    if (IS_FISHSANITY) {
-                                        s16 paramsTemp = sFishOnHandParams;
-                                        sFishOnHandParams = this->fishsanityParams;
-                                        this->fishsanityParams = paramsTemp;
-                                    }
                                 }
                                 sRodCastState = 0;
                             }

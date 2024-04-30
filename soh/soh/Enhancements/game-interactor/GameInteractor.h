@@ -220,6 +220,17 @@ typedef enum {
     GI_VB_GERUDOS_BE_FRIENDLY,
     // Vanilla condition: switch
     GI_VB_GTG_GATE_BE_OPEN,
+    // Opt: *Fishing
+    // Vanilla condition: sFishOnHandLength == 0.0f
+    GI_VB_FISHING_CONSIDER_HAND_EMPTY,
+    // Opt: *Fishing
+    // Vanilla condition: (this->isLoach == 0) && (sFishOnHandIsLoach == 0) && ((s16)this->fishLength < (s16)sFishOnHandLength)
+    // (and, implicitly, sFishOnHandLength != 0.0f)
+    GI_VB_FISHING_SHOULD_CONFIRM_KEEP,
+    // Opt: *Fishing
+    // Vanilla condition: play->msgCtx.choiceIndex != 0
+    GI_VB_FISHING_SHOULD_SWAP_FISH,
+
 
     /*** Play Cutscenes ***/
 

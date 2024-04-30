@@ -138,6 +138,13 @@ class Fishsanity {
     */
     FishIdentity GetPendingFish();
 
+    /**
+     * @brief Set the currently-held fish parameters
+     * @param params Actor parameters
+     * @return Previously-held fish's parameters, or 0 if hand was empty.
+     */
+    s16 SetHeldFish(s16 params);
+
   private:
     /**
      * @brief Initialize helper statics if they have not been initialized yet
@@ -162,6 +169,11 @@ class Fishsanity {
      * @brief Identity of the last-caught fish in the fishing pond minigame awaiting reward
     */
     FishIdentity mPendingFish;
+
+    /**
+     * @brief Actor params of the currently-held fish
+     */
+    s16 mFishOnHandParams;
     
     /**
      * @brief True if fishsanity helpers have been initialized
